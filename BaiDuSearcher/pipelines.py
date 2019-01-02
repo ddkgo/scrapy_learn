@@ -24,14 +24,18 @@ class BaidusearcherPipeline(object):
         cursor = dbpool.cursor()
 
         # 使用预处理语句创建表
-        sql = """CREATE TABLE IF NOT EXISTS BAIDU_RESULT(
-                Id INT PRIMARY KEY AUTO_INCREMENT,
-                rank VARCHAR(100),  
-                title VARCHAR(100), 
-                lading VARCHAR(100), 
-                page INT(64), 
-                query VARCHAR(1000))"""
+        sqlDel = "DROP TABLE IF EXISTS BAIDU_RESULT;"
 
+        sql = """CREATE TABLE IF NOT EXISTS BAIDU_RESULT(
+                        Id INT PRIMARY KEY AUTO_INCREMENT,
+                        rank VARCHAR(100),
+                        title VARCHAR(100),
+                        lading VARCHAR(100),
+                        page INT(64),
+                        query VARCHAR(1000),
+                        baiduQuery VARCHAR(1000))"""
+
+        cursor.execute(sqlDel)
         cursor.execute(sql)
         return cls(dbpool,mysqlList)
 
@@ -45,10 +49,10 @@ class BaidusearcherPipeline(object):
         dbObject = self.dbpool
         cursor = dbObject.cursor()
         # cursor.execute("USE BAIDU_RESULT")
-        sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query) VALUES(%s,%s,%s,%s,%s)"
+        sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query,baiduQuery) VALUES(%s,%s,%s,%s,%s,%s)"
         try:
             cursor.execute(sql, (
-            item['rank'], item['title'], item['lading'], item['page'], item['query']))
+            item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery']))
             cursor.connection.commit()
         except BaseException as e:
             print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")

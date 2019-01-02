@@ -16,4 +16,6 @@ class BaidusearcherItem(scrapy.Item):
     lading = scrapy.Field()
     page = scrapy.Field()
     query = scrapy.Field()
+    baiduQuery = scrapy.Field()
+    mail = scrapy.Field()
     pass

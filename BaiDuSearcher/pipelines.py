@@ -33,7 +33,8 @@ class BaidusearcherPipeline(object):
                         lading VARCHAR(100),
                         page INT(64),
                         query VARCHAR(1000),
-                        baiduQuery VARCHAR(1000))"""
+                        baiduQuery VARCHAR(1000),
+                        mail VARCHAR(1000))"""
 
         cursor.execute(sqlDel)
         cursor.execute(sql)
@@ -49,14 +50,15 @@ class BaidusearcherPipeline(object):
         dbObject = self.dbpool
         cursor = dbObject.cursor()
         # cursor.execute("USE BAIDU_RESULT")
-        sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query,baiduQuery) VALUES(%s,%s,%s,%s,%s,%s)"
+        sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query,baiduQuery,mail) VALUES(%s,%s,%s,%s,%s,%s,%s)"
         try:
             cursor.execute(sql, (
-            item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery']))
+            item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery'], item['mail']))
             cursor.connection.commit()
         except BaseException as e:
             print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")
             dbObject.rollback()
         return item
+
 
 

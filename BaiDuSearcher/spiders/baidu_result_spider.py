@@ -46,6 +46,20 @@ class searchSpider(scrapy.Spider):
     #         # start_urls.append(url)
     #         yield Request(url, self.parse)
 
+    def getMailAddFromFile(self, response):
+        regex = re.compile(r"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\b", re.IGNORECASE)
+        mails = re.findall(regex, response.text)
+        mails_str = ','.join(mails)
+        print(mails)
+        return mails_str
+
+    def parseMail(self, response):
+        item = response.meta['item']
+        item['mail'] = self.getMailAddFromFile(response)
+        print('解析邮箱返回')
+        print(item)
+        yield item
+
     def parseOnePage(self,response):
         n = 0
         current_page = int(response.xpath('//div[@id="page"]/strong/span[@class="pc"]/text()').extract_first())
@@ -55,7 +69,7 @@ class searchSpider(scrapy.Spider):
         print(current_page)
         print(lading)
 
-        if current_page > 1:
+        if current_page > 500:
             return
         # 下一页
         nextUrlTemp = response.xpath('//div[@id="page"]/a[span[@class="pc"] = $val]/@href',val = current_page+1).extract()
@@ -73,6 +87,13 @@ class searchSpider(scrapy.Spider):
             for result in querySel.xpath('.'):
                 query = query.join(result.xpath('string(.)').extract_first().strip())
 
+            # query = 'http://www.biketo.com/about/contact.html'
+            patternhttp = re.compile(r'http')
+            matchhttp = patternhttp.findall(query)
+            if matchhttp:
+                print('地址合规')
+            else:
+                query = 'http://'+query
             # 将正则表达式编译成Pattern对象
             pattern = re.compile(r'bike')
             match = pattern.findall(query)
@@ -84,11 +105,10 @@ class searchSpider(scrapy.Spider):
                 item['page'] = page
                 item['query'] = query
                 item['baiduQuery'] = baiduQuery
-                item['mail'] = 0
-                yield item
+                request = Request(query, callback=self.parseMail, dont_filter=True)
+                request.meta['item'] = item
+                yield request
+                # yield item
 
-        time.sleep(3)
+        time.sleep(0.5)
         yield Request(nextUrl, self.parse)
-
-    def parseMail(self,response):
-        return 0

@@ -19,3 +19,10 @@ class BaidusearcherItem(scrapy.Item):
     baiduQuery = scrapy.Field()
     mail = scrapy.Field()
     pass
+
+
+class BaiduSendEmailItem(scrapy.Item):
+    # define the fields for your item here like:
+    name = scrapy.Field()
+    email = scrapy.Field()
+    pass

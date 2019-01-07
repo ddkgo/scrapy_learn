@@ -36,8 +36,15 @@ class BaidusearcherPipeline(object):
                         baiduQuery VARCHAR(1000),
                         mail VARCHAR(1000))"""
 
-        cursor.execute(sqlDel)
+        sqlMail = """CREATE TABLE IF NOT EXISTS EMAIL_BAIDU_RESULT(
+                                Id INT PRIMARY KEY AUTO_INCREMENT,
+                                email VARCHAR(100),
+                                times INT(100),
+                                lastStamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"""
+
+        # cursor.execute(sqlDel)
         cursor.execute(sql)
+        cursor.execute(sqlMail)
         return cls(dbpool,mysqlList)
 
     def dbHandle(self):
@@ -49,16 +56,28 @@ class BaidusearcherPipeline(object):
         print(item)
         dbObject = self.dbpool
         cursor = dbObject.cursor()
-        # cursor.execute("USE BAIDU_RESULT")
-        sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query,baiduQuery,mail) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-        try:
-            cursor.execute(sql, (
-            item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery'], item['mail']))
-            cursor.connection.commit()
-        except BaseException as e:
-            print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")
-            dbObject.rollback()
+        if spider.name == 'search':
+            sql = "INSERT INTO BAIDU_RESULT(rank,title,lading,page,query,baiduQuery,mail) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+            try:
+                cursor.execute(sql, (
+                    item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery'],
+                    item['mail']))
+                cursor.connection.commit()
+            except BaseException as e:
+                print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")
+                dbObject.rollback()
+        elif spider.name == 'emailSend':
+            sql = "INSERT INTO EMAIL_BAIDU_RESULT(email,times) VALUES(%s,%s)"
+            try:
+                cursor.execute(sql, (
+                    item['email'],0))
+                cursor.connection.commit()
+            except BaseException as e:
+                print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")
+                dbObject.rollback()
+
         return item
+
 
 
 

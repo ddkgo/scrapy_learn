@@ -42,8 +42,15 @@ class BaidusearcherPipeline(object):
                                 times INT(100),
                                 lastStamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"""
 
+        sqlGoogle = """CREATE TABLE IF NOT EXISTS GOOGLE_RESULT(
+                                        Id INT PRIMARY KEY AUTO_INCREMENT,
+                                        url VARCHAR(1000),
+                                        mail VARCHAR(1000),
+                                        lastStamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"""
+
         # cursor.execute(sqlDel)
         cursor.execute(sql)
+        cursor.execute(sqlGoogle)
         cursor.execute(sqlMail)
         return cls(dbpool,mysqlList)
 
@@ -62,6 +69,15 @@ class BaidusearcherPipeline(object):
                 cursor.execute(sql, (
                     item['rank'], item['title'], item['lading'], item['page'], item['query'], item['baiduQuery'],
                     item['mail']))
+                cursor.connection.commit()
+            except BaseException as e:
+                print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")
+                dbObject.rollback()
+        if spider.name == 'googlesearch':
+            sql = "INSERT INTO GOOGLE_RESULT(url,mail) VALUES(%s,%s)"
+            try:
+                cursor.execute(sql, (
+                    item['url'],item['mail']))
                 cursor.connection.commit()
             except BaseException as e:
                 print("错误在这里>>>>>>>>>>>>>", e, "<<<<<<<<<<<<<错误在这里")

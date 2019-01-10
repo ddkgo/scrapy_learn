@@ -26,3 +26,10 @@ class BaiduSendEmailItem(scrapy.Item):
     name = scrapy.Field()
     email = scrapy.Field()
     pass
+
+class GoogleItem(scrapy.Item):
+    # define the fields for your item here like:
+    name = scrapy.Field()
+    url = scrapy.Field()
+    mail = scrapy.Field()
+    pass

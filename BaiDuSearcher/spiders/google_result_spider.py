@@ -5,7 +5,7 @@ import time
 import re
 from urllib import parse
 from scrapy.http import Request
-from BaiDuSearcher.items import BaidusearcherItem  # 导入item
+from BaiDuSearcher.items import GoogleItem  # 导入item
 
 class searchSpider(scrapy.Spider):
     name = "googlesearch"
@@ -48,8 +48,14 @@ class searchSpider(scrapy.Spider):
     def getMailAddFromFile(self, response):
         regex = re.compile(r"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\b", re.IGNORECASE)
         mails = re.findall(regex, response.text)
-        mails_str = ','.join(mails)
-        print(mails)
+        matchMails = {}
+        for mail in mails:
+            pattern = re.compile(r"/\.[jpg|gif|png]/i");
+            match = pattern.findall(mail)
+            if match:
+                matchMails.append(mail)
+
+        mails_str = ','.join(matchMails)
         return mails_str
 
     def parseMail(self, response):
@@ -61,54 +67,22 @@ class searchSpider(scrapy.Spider):
 
     def parseOnePage(self,response):
         n = 0
-        current = response.xpath('//table[@id="nav"]/tbody/tr')
-        current_page = int(current.extract_first())
-        lading = ''
-        # lading = response.xpath('//div[@id="content_left"]/div[@class="result c-container "]/div[@class="c-abstract"]/text()').extract_first()
-        print('当前页面')
-        print(current_page)
-        print(lading)
-
-        if current_page > 500:
-            return
-        # 下一页
-        nextUrlTemp = response.xpath('//div[@id="page"]/a[span[@class="pc"] = $val]/@href',val = current_page+1).extract()
-        nextUrl = 'https://www.baidu.com' + nextUrlTemp[0]
-        print('下一页路径')
-        print(nextUrl)
-        for sel in response.xpath('//div[@id="content_left"]/div[@class="result c-container "]'):
+        url_to_follow = response.css(".r>a::attr(href)").extract()
+        url_to_follow = [url.replace('/url?q=', '') for url in url_to_follow]
+        for url in url_to_follow:
             print('解析页面')
-            item = BaidusearcherItem()
-            title = ''.join(sel.xpath('./h3/a/em/text() | ./h3/a/text()').extract())
-            page = current_page
-            baiduQuery = sel.xpath('./h3/a/@href').extract()
-            querySel = sel.xpath('./div/div/div/a[@class="c-showurl"] | ./div/a[@class="c-showurl"]')
-            query = ''
-            for result in querySel.xpath('.'):
-                query = query.join(result.xpath('string(.)').extract_first().strip())
+            print(url)
+            item = GoogleItem()
+            item['url'] = url
+            request = Request(url, callback=self.parseMail, dont_filter=True)
+            request.meta['item'] = item
+            yield request
 
-            # query = 'http://www.biketo.com/about/contact.html'
-            patternhttp = re.compile(r'http')
-            matchhttp = patternhttp.findall(query)
-            if matchhttp:
-                print('地址合规')
+        next_pages_urls = response.css("#foot table a::attr(href)").extract()
+        for page_num, url in enumerate(next_pages_urls):
+            if (page_num < 11):
+                next_page_url = response.urljoin(url)
+                yield scrapy.Request(
+                    url=next_page_url, callback=self.parse, dont_filter=True)
             else:
-                query = 'http://'+query
-            # 将正则表达式编译成Pattern对象
-            pattern = re.compile(r'bike')
-            match = pattern.findall(query)
-            if match:
-                n += 1
-                item['rank'] = n
-                item['title'] = title.encode('utf8')
-                item['lading'] = lading.encode('utf8')
-                item['page'] = page
-                item['query'] = query
-                item['baiduQuery'] = baiduQuery
-                request = Request(query, callback=self.parseMail, dont_filter=True)
-                request.meta['item'] = item
-                yield request
-                # yield item
-
-        time.sleep(0.5)
-        yield Request(nextUrl, self.parse)
+                break

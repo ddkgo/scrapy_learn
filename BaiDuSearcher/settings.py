@@ -125,18 +125,18 @@ def getCookie():
     return cookie
 
 '''设置默认request headers'''
-# DEFAULT_REQUEST_HEADERS = {
-# 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-# 'Accept-Encoding':'gzip, deflate, sdch',
-# 'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
-# 'Cache-Control':'max-age=0',
-# 'Connection':'keep-alive',
-# 'Host':'www.baidu.com',
-# 'RA-Sid':'7739A016-20140918-030243-3adabf-48f828',
-# 'RA-Ver':'3.0.7',
-# 'Upgrade-Insecure-Requests':'1',
-# 'Cookie':'%s' % getCookie()
-# }
+DEFAULT_REQUEST_HEADERS = {
+'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+'Accept-Encoding':'gzip, deflate, sdch',
+'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
+'Cache-Control':'max-age=0',
+'Connection':'keep-alive',
+'Host':'www.baidu.com',
+'RA-Sid':'7739A016-20140918-030243-3adabf-48f828',
+'RA-Ver':'3.0.7',
+'Upgrade-Insecure-Requests':'1',
+'Cookie':'%s' % getCookie()
+}
 DEFAULT_REQUEST_HEADERS = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/5.0.4.3000 Chrome/47.0.2526.73 Safari/537.36',
 }
